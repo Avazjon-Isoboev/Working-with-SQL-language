@@ -1,0 +1,2130 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Avazjon-Isoboev/Working-with-SQL-language/blob/main/DATA_WRANGLE_SQLite_ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "id": "176fd2d2",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "176fd2d2",
+        "outputId": "82808a24-3b96-4b3f-92cc-02fe0aecbc46"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[?25l\r\u001b[K     |████▊                           | 10 kB 18.1 MB/s eta 0:00:01\r\u001b[K     |█████████▌                      | 20 kB 11.7 MB/s eta 0:00:01\r\u001b[K     |██████████████▎                 | 30 kB 15.8 MB/s eta 0:00:01\r\u001b[K     |███████████████████             | 40 kB 12.6 MB/s eta 0:00:01\r\u001b[K     |███████████████████████▉        | 51 kB 9.8 MB/s eta 0:00:01\r\u001b[K     |████████████████████████████▋   | 61 kB 11.3 MB/s eta 0:00:01\r\u001b[K     |████████████████████████████████| 68 kB 2.6 MB/s \n",
+            "\u001b[?25h  Building wheel for uuid (setup.py) ... \u001b[?25l\u001b[?25hdone\n"
+          ]
+        }
+      ],
+      "source": [
+        "# Jovian Commit Essentials\n",
+        "# Please retain and execute this cell without modifying the contents for `jovian.commit` to work\n",
+        "!pip install jovian --upgrade -q\n",
+        "import jovian\n",
+        "jovian.set_project('03-datawrangle-04-sqlite-2')\n",
+        "jovian.set_colab_id('1lCjCQjS3N4z885BxYVLwN1k4yK5XHPbN')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "b4fb9042-d293-44c3-8a0c-f95a30124fb2",
+      "metadata": {
+        "id": "b4fb9042-d293-44c3-8a0c-f95a30124fb2"
+      },
+      "source": [
+        "\n",
+        "## 3-MODUL. MA’LUMOTLARGA ISHLOV BERISH\n",
+        "\n",
+        "### 3.1 Fayllar bilan ishlash\n",
+        "\n",
+        "#### Ma'lumotlar ombori. 2-qism"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a59d2ec7-72ed-4eef-a05a-16c6e22febdd",
+      "metadata": {
+        "id": "a59d2ec7-72ed-4eef-a05a-16c6e22febdd"
+      },
+      "source": [
+        "# Mavjud DF ni Omborga yangi jadval ko'rinishida yuklash\n",
+        "\n",
+        "Kerakli modullarni chaqiramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "id": "701506b9-c73a-4c52-b3c6-db2308bb7c68",
+      "metadata": {
+        "id": "701506b9-c73a-4c52-b3c6-db2308bb7c68"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import sqlite3 as sql"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "38bf015e-6767-41c8-a4cf-bf9166692ce2",
+      "metadata": {
+        "id": "38bf015e-6767-41c8-a4cf-bf9166692ce2"
+      },
+      "source": [
+        "Yangi ma'lumotlar omborini yaratamiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "id": "06d714ee-de09-4501-ad43-04c116959159",
+      "metadata": {
+        "id": "06d714ee-de09-4501-ad43-04c116959159"
+      },
+      "outputs": [],
+      "source": [
+        "db =sql.connect(\"newdb.db\")\n",
+        "cursor = db.cursor()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "8776d5a1-4503-424c-9f9e-5d26c6901649",
+      "metadata": {
+        "id": "8776d5a1-4503-424c-9f9e-5d26c6901649"
+      },
+      "source": [
+        "Ishlash uchun onlayndan jadval yuklab olamiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "id": "7c619d01-784b-48da-86cb-e0cd12eb1202",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 285
+        },
+        "id": "7c619d01-784b-48da-86cb-e0cd12eb1202",
+        "outputId": "d6ba62e6-beb6-466f-ccbf-30f4b04d29b5"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "        Entity Code  Year  Electricity from coal (TWh)  \\\n",
+              "0  Afghanistan  AFG  2000                          0.0   \n",
+              "1  Afghanistan  AFG  2001                          0.0   \n",
+              "2  Afghanistan  AFG  2002                          0.0   \n",
+              "3  Afghanistan  AFG  2003                          0.0   \n",
+              "4  Afghanistan  AFG  2004                          0.0   \n",
+              "\n",
+              "   Electricity from gas (TWh)  Electricity from hydro (TWh)  \\\n",
+              "0                       0.155                         0.312   \n",
+              "1                       0.094                         0.498   \n",
+              "2                       0.132                         0.555   \n",
+              "3                       0.309                         0.630   \n",
+              "4                       0.329                         0.565   \n",
+              "\n",
+              "   Electricity from other renewables (TWh)  Electricity from solar (TWh)  \\\n",
+              "0                                      0.0                           0.0   \n",
+              "1                                      0.0                           0.0   \n",
+              "2                                      0.0                           0.0   \n",
+              "3                                      0.0                           0.0   \n",
+              "4                                      0.0                           0.0   \n",
+              "\n",
+              "   Electricity from oil (TWh)  Electricity from wind (TWh)  \\\n",
+              "0                         0.0                          0.0   \n",
+              "1                         0.0                          0.0   \n",
+              "2                         0.0                          0.0   \n",
+              "3                         0.0                          0.0   \n",
+              "4                         0.0                          0.0   \n",
+              "\n",
+              "   Electricity from nuclear (TWh)  \n",
+              "0                             0.0  \n",
+              "1                             0.0  \n",
+              "2                             0.0  \n",
+              "3                             0.0  \n",
+              "4                             0.0  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-a728f4d5-b81e-45a1-8699-4949b907c9ac\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Entity</th>\n",
+              "      <th>Code</th>\n",
+              "      <th>Year</th>\n",
+              "      <th>Electricity from coal (TWh)</th>\n",
+              "      <th>Electricity from gas (TWh)</th>\n",
+              "      <th>Electricity from hydro (TWh)</th>\n",
+              "      <th>Electricity from other renewables (TWh)</th>\n",
+              "      <th>Electricity from solar (TWh)</th>\n",
+              "      <th>Electricity from oil (TWh)</th>\n",
+              "      <th>Electricity from wind (TWh)</th>\n",
+              "      <th>Electricity from nuclear (TWh)</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.155</td>\n",
+              "      <td>0.312</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2001</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.094</td>\n",
+              "      <td>0.498</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2002</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.132</td>\n",
+              "      <td>0.555</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.309</td>\n",
+              "      <td>0.630</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2004</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.329</td>\n",
+              "      <td>0.565</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-a728f4d5-b81e-45a1-8699-4949b907c9ac')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-a728f4d5-b81e-45a1-8699-4949b907c9ac button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-a728f4d5-b81e-45a1-8699-4949b907c9ac');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 4
+        }
+      ],
+      "source": [
+        "df = pd.read_csv(\"https://raw.githubusercontent.com/anvarnarz/praktikum_datasets/main/Electricity_Production_By_Source.csv\")\n",
+        "df.head()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "42a89db9-d918-4672-80dc-7ca1a8c66f6a",
+      "metadata": {
+        "id": "42a89db9-d918-4672-80dc-7ca1a8c66f6a"
+      },
+      "source": [
+        "DFni omborga yuklashdan avval, kelin ustunlar nomini qisqartiraylik. Bunday qilishimizga sabab, keyinchalik SQL komandalar yozganda uzun nomlarni yozish o'ziga yarasha noqulayliklar keltirib chiqaradi."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "id": "d37ddec1-0b53-4dbe-acd4-95dea7869d5c",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 206
+        },
+        "id": "d37ddec1-0b53-4dbe-acd4-95dea7869d5c",
+        "outputId": "9f4a44ef-4d40-4f0f-f51f-eabb1c9b1b54"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "       country code  year  coal    gas  hydro  renewable_other  solar  oil  \\\n",
+              "0  Afghanistan  AFG  2000   0.0  0.155  0.312              0.0    0.0  0.0   \n",
+              "1  Afghanistan  AFG  2001   0.0  0.094  0.498              0.0    0.0  0.0   \n",
+              "2  Afghanistan  AFG  2002   0.0  0.132  0.555              0.0    0.0  0.0   \n",
+              "3  Afghanistan  AFG  2003   0.0  0.309  0.630              0.0    0.0  0.0   \n",
+              "4  Afghanistan  AFG  2004   0.0  0.329  0.565              0.0    0.0  0.0   \n",
+              "\n",
+              "   wind  nuclear  \n",
+              "0   0.0      0.0  \n",
+              "1   0.0      0.0  \n",
+              "2   0.0      0.0  \n",
+              "3   0.0      0.0  \n",
+              "4   0.0      0.0  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-87c8f665-8bae-4869-b2aa-a3038fd81374\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>country</th>\n",
+              "      <th>code</th>\n",
+              "      <th>year</th>\n",
+              "      <th>coal</th>\n",
+              "      <th>gas</th>\n",
+              "      <th>hydro</th>\n",
+              "      <th>renewable_other</th>\n",
+              "      <th>solar</th>\n",
+              "      <th>oil</th>\n",
+              "      <th>wind</th>\n",
+              "      <th>nuclear</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.155</td>\n",
+              "      <td>0.312</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2001</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.094</td>\n",
+              "      <td>0.498</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2002</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.132</td>\n",
+              "      <td>0.555</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.309</td>\n",
+              "      <td>0.630</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2004</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.329</td>\n",
+              "      <td>0.565</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-87c8f665-8bae-4869-b2aa-a3038fd81374')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-87c8f665-8bae-4869-b2aa-a3038fd81374 button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-87c8f665-8bae-4869-b2aa-a3038fd81374');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 5
+        }
+      ],
+      "source": [
+        "cols = ['country','code','year','coal','gas','hydro','renewable_other','solar','oil','wind','nuclear']\n",
+        "df.columns = cols\n",
+        "df.head()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a75e2b6e-d49f-4650-9c8f-17def6f940c5",
+      "metadata": {
+        "id": "a75e2b6e-d49f-4650-9c8f-17def6f940c5"
+      },
+      "source": [
+        "`.to_sql()` metodi yordamida jadvalni to'g'ridan to'g'ri omborga ko'chirishimiz mumkin. \n",
+        "\n",
+        "Jadvalga `jadval` deb yangi nom beramiz."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 6,
+      "id": "ac7acb84-2c76-491c-9559-8450152aeb41",
+      "metadata": {
+        "id": "ac7acb84-2c76-491c-9559-8450152aeb41"
+      },
+      "outputs": [],
+      "source": [
+        "df.to_sql('jadval',db)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "0c0e35b9-bf52-4885-bf26-78dbfac221c4",
+      "metadata": {
+        "id": "0c0e35b9-bf52-4885-bf26-78dbfac221c4"
+      },
+      "source": [
+        "Jadvalni qaytib o'qiymiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "id": "b392202a-92ec-4825-8371-1ed7b3565f66",
+      "metadata": {
+        "id": "b392202a-92ec-4825-8371-1ed7b3565f66"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"SELECT * FROM jadval\"\n",
+        "df2 = pd.read_sql(query,db, index_col=\"index\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "id": "0299c51c-fd35-4f40-9246-18eca44354be",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 238
+        },
+        "id": "0299c51c-fd35-4f40-9246-18eca44354be",
+        "outputId": "b2fd01df-9353-47d0-efd1-015e9e932c25"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "           country code  year  coal    gas  hydro  renewable_other  solar  \\\n",
+              "index                                                                       \n",
+              "0      Afghanistan  AFG  2000   0.0  0.155  0.312              0.0    0.0   \n",
+              "1      Afghanistan  AFG  2001   0.0  0.094  0.498              0.0    0.0   \n",
+              "2      Afghanistan  AFG  2002   0.0  0.132  0.555              0.0    0.0   \n",
+              "3      Afghanistan  AFG  2003   0.0  0.309  0.630              0.0    0.0   \n",
+              "4      Afghanistan  AFG  2004   0.0  0.329  0.565              0.0    0.0   \n",
+              "\n",
+              "       oil  wind  nuclear  \n",
+              "index                      \n",
+              "0      0.0   0.0      0.0  \n",
+              "1      0.0   0.0      0.0  \n",
+              "2      0.0   0.0      0.0  \n",
+              "3      0.0   0.0      0.0  \n",
+              "4      0.0   0.0      0.0  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-e99abde5-513b-458e-a375-b321fb3b1a0f\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>country</th>\n",
+              "      <th>code</th>\n",
+              "      <th>year</th>\n",
+              "      <th>coal</th>\n",
+              "      <th>gas</th>\n",
+              "      <th>hydro</th>\n",
+              "      <th>renewable_other</th>\n",
+              "      <th>solar</th>\n",
+              "      <th>oil</th>\n",
+              "      <th>wind</th>\n",
+              "      <th>nuclear</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>index</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2000</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.155</td>\n",
+              "      <td>0.312</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2001</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.094</td>\n",
+              "      <td>0.498</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2002</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.132</td>\n",
+              "      <td>0.555</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2003</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.309</td>\n",
+              "      <td>0.630</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>Afghanistan</td>\n",
+              "      <td>AFG</td>\n",
+              "      <td>2004</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.329</td>\n",
+              "      <td>0.565</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "      <td>0.0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-e99abde5-513b-458e-a375-b321fb3b1a0f')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-e99abde5-513b-458e-a375-b321fb3b1a0f button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-e99abde5-513b-458e-a375-b321fb3b1a0f');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ],
+      "source": [
+        "df2.head()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "id": "67e2553f-b292-4c06-8541-2e17042ce0f9",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "67e2553f-b292-4c06-8541-2e17042ce0f9",
+        "outputId": "cce33ffd-25d9-459a-e6e2-d84d8bd6a6ee"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "<class 'pandas.core.frame.DataFrame'>\n",
+            "Int64Index: 6241 entries, 0 to 6240\n",
+            "Data columns (total 11 columns):\n",
+            " #   Column           Non-Null Count  Dtype  \n",
+            "---  ------           --------------  -----  \n",
+            " 0   country          6241 non-null   object \n",
+            " 1   code             5474 non-null   object \n",
+            " 2   year             6241 non-null   int64  \n",
+            " 3   coal             5221 non-null   float64\n",
+            " 4   gas              5221 non-null   float64\n",
+            " 5   hydro            6241 non-null   float64\n",
+            " 6   renewable_other  6206 non-null   float64\n",
+            " 7   solar            6241 non-null   float64\n",
+            " 8   oil              5221 non-null   float64\n",
+            " 9   wind             6241 non-null   float64\n",
+            " 10  nuclear          6241 non-null   float64\n",
+            "dtypes: float64(8), int64(1), object(2)\n",
+            "memory usage: 585.1+ KB\n"
+          ]
+        }
+      ],
+      "source": [
+        "df2.info()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a4fac66e-9747-4022-824b-1955a96a12e1",
+      "metadata": {
+        "id": "a4fac66e-9747-4022-824b-1955a96a12e1"
+      },
+      "source": [
+        "# Omborda bo'sh jadval yaratish"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "24632295-f397-43db-a59d-03c908d263c7",
+      "metadata": {
+        "id": "24632295-f397-43db-a59d-03c908d263c7"
+      },
+      "source": [
+        "**Jadval yaratish qadamlari:**\n",
+        "- `CREATE TABLE` - jadval yaratish buyrug'i\n",
+        "- `IF NOT EXISTS` - jadval mavjud bo'lmasa\n",
+        "- `worldpop` - jadval nomi\n",
+        "- Qavs ichida jadval ustunlari, ustundagi ma'lumot turi va qo'shimcha parametrlar vergul bilan ajratib yoziladi.\n",
+        "\n",
+        "**Quyidagi misolada jadvalimiz 5 ta ustundan iborat:**\n",
+        "- `rank` - davlat reytingi (zichlik bo'yicha), `INT` ya'ni butun son.\n",
+        "- `country` - davlat nomi, `TEXT` - matn, `PRIMARY KEY` - birlamchi qiymat, qatorga shu ustun qiymati bilan murojaat qilinadi (takrorlanman bo'lishi kerak)\n",
+        "- `density` - zichlik, `DOUBLE` - o'nlik son\n",
+        "- `population` - aholi soni, `DOUBLE` - o'nlik son, `NOT NULL` - bo'sh bo'lmasligi (qiymat berilishi shart)\n",
+        "- `area` - maydoni, `INT` - butun son, `NOT NULL` - qiymat berilishi shart."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "id": "d0a83736-93c2-45b9-8301-39e668c3d87a",
+      "metadata": {
+        "id": "d0a83736-93c2-45b9-8301-39e668c3d87a"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"\"\"\n",
+        "CREATE TABLE IF NOT EXISTS worldpop(\n",
+        "rank INT,\n",
+        "country TEXT PRIMARY KEY,\n",
+        "density DOUBLE,\n",
+        "population DOUBLE NOT NULL,\n",
+        "area INT NOT NULL\n",
+        ");\n",
+        "\"\"\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "fbee36fd-2131-461e-9bed-eeb722c94dea",
+      "metadata": {
+        "id": "fbee36fd-2131-461e-9bed-eeb722c94dea"
+      },
+      "source": [
+        "Ahamiyat bering, endi o'zgartirish kiritgandan so'ng natijalarni xotiradan faylga yozish uchun `.commit()` metodiga murojaat qilayapmiz."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "e9fed2a5-ea0e-43a8-bd7b-638e84beeb2c",
+      "metadata": {
+        "id": "e9fed2a5-ea0e-43a8-bd7b-638e84beeb2c"
+      },
+      "source": [
+        "Jadval qo'shilganini tekshirib ko'ramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "id": "e1442e68-0bb9-430b-bd98-90a635fc0a43",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "e1442e68-0bb9-430b-bd98-90a635fc0a43",
+        "outputId": "425cd170-1776-439d-ae58-d9243d90c680"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[('jadval',), ('worldpop',)]\n"
+          ]
+        }
+      ],
+      "source": [
+        "cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table';\")\n",
+        "print(cursor.fetchall())"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "cccdfbd8-2958-446a-bf15-b38111ab6465",
+      "metadata": {
+        "id": "cccdfbd8-2958-446a-bf15-b38111ab6465"
+      },
+      "source": [
+        "Jadval ustunlarini tekshirib ko'ramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 12,
+      "id": "a21183d2-6da8-40ca-862b-c9d134df91be",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a21183d2-6da8-40ca-862b-c9d134df91be",
+        "outputId": "6b9b4f27-44b9-455e-edfc-a89909f7d12c"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(0, 'rank', 'INT', 0, None, 0),\n",
+              " (1, 'country', 'TEXT', 0, None, 1),\n",
+              " (2, 'density', 'DOUBLE', 0, None, 0),\n",
+              " (3, 'population', 'DOUBLE', 1, None, 0),\n",
+              " (4, 'area', 'INT', 1, None, 0)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 12
+        }
+      ],
+      "source": [
+        "cursor.execute(\"PRAGMA table_info(worldpop);\")\n",
+        "cursor.fetchall()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "0a96430c-63f5-454c-905c-422ae34a252d",
+      "metadata": {
+        "id": "0a96430c-63f5-454c-905c-422ae34a252d"
+      },
+      "source": [
+        "Jadvalni o'qiymiz "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 13,
+      "id": "9e9d0163-5c66-4d92-8e45-b8f07131dce9",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 49
+        },
+        "id": "9e9d0163-5c66-4d92-8e45-b8f07131dce9",
+        "outputId": "dc2622b1-c511-4cb2-ccab-0583ab448fdd"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Empty DataFrame\n",
+              "Columns: [rank, country, density, population, area]\n",
+              "Index: []"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-63b26451-649b-4304-8867-d0489eb4bdac\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>rank</th>\n",
+              "      <th>country</th>\n",
+              "      <th>density</th>\n",
+              "      <th>population</th>\n",
+              "      <th>area</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-63b26451-649b-4304-8867-d0489eb4bdac')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-63b26451-649b-4304-8867-d0489eb4bdac button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-63b26451-649b-4304-8867-d0489eb4bdac');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 13
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "df3 = pd.read_sql(query,db)\n",
+        "df3"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "3ab2e897-8e17-43e6-86df-9e5f2187451f",
+      "metadata": {
+        "id": "3ab2e897-8e17-43e6-86df-9e5f2187451f"
+      },
+      "source": [
+        "Hozircha jadval bo'sh."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "035ecfb5-6741-41c5-bab4-86400a93a147",
+      "metadata": {
+        "id": "035ecfb5-6741-41c5-bab4-86400a93a147"
+      },
+      "source": [
+        "## Jadvalga yangi ma'lumot qo'shish\n",
+        "SQL jadvlaga ushbu manzilda joylashgan ma'lumotlarni kiritamiz: https://github.com/anvarnarz/praktikum_datasets/blob/main/world_population.csv\n",
+        "\n",
+        "![Imgur](https://i.imgur.com/lilTCTm.png)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a0f59715-6a54-4a79-ba2a-ae732a5b6531",
+      "metadata": {
+        "id": "a0f59715-6a54-4a79-ba2a-ae732a5b6531"
+      },
+      "source": [
+        "Keling SQL jadvalga yuqoridan `Macau` davlatiga oid ma'lumotlarni kiritamiz.\n",
+        "\n",
+        "Agar barcha ustunlar uchun qiymat berayotgan bo'lsak to'g'ridan-to'g'ri qiymatlarni yozamiz. Bunda qiymatlar tartibi jadval ustunlari ketma-ketligi bilan mos tushishiga ahamiyat bering:"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 14,
+      "id": "2de9b03e-35f7-4491-87f8-aaee2700b436",
+      "metadata": {
+        "id": "2de9b03e-35f7-4491-87f8-aaee2700b436"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"INSERT INTO worldpop VALUES (1, 'Macau', 21946.4667, 658.3940, 30)\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "b99fa94a-75f2-44ec-a3f0-65b5a513188c",
+      "metadata": {
+        "id": "b99fa94a-75f2-44ec-a3f0-65b5a513188c"
+      },
+      "source": [
+        "Qiymat qo'shilganini tekshirib ko'ramiz:"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 15,
+      "id": "bb8ea572-9bd4-4e16-817b-a28d0974fe64",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "bb8ea572-9bd4-4e16-817b-a28d0974fe64",
+        "outputId": "f265cd22-460d-4f92-e9af-332ee4d22cab"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(1, 'Macau', 21946.4667, 658.394, 30)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 15
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "cursor.execute(query)\n",
+        "cursor.fetchall()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 16,
+      "id": "9dfaa692-85a3-49ef-a251-3040c457e4b4",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 0
+        },
+        "id": "9dfaa692-85a3-49ef-a251-3040c457e4b4",
+        "outputId": "cba79da0-81be-476a-ee65-b0da845b3cc9"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "   rank country     density  population  area\n",
+              "0     1   Macau  21946.4667     658.394    30"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-484d5bb0-f89a-443e-b08d-8d1dc55cea76\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>rank</th>\n",
+              "      <th>country</th>\n",
+              "      <th>density</th>\n",
+              "      <th>population</th>\n",
+              "      <th>area</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1</td>\n",
+              "      <td>Macau</td>\n",
+              "      <td>21946.4667</td>\n",
+              "      <td>658.394</td>\n",
+              "      <td>30</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-484d5bb0-f89a-443e-b08d-8d1dc55cea76')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-484d5bb0-f89a-443e-b08d-8d1dc55cea76 button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-484d5bb0-f89a-443e-b08d-8d1dc55cea76');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 16
+        }
+      ],
+      "source": [
+        "pd.read_sql(query,db)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "fbc43e34-cefc-4796-9923-6efdcbc38117",
+      "metadata": {
+        "id": "fbc43e34-cefc-4796-9923-6efdcbc38117"
+      },
+      "source": [
+        "Agar faqatgina ma'lum ustunlarga qiymat qo'shilsa, avval ustun nomlari yoziladi. Keling jadvlaga O'zbekiston haqida quyidagi ma'lumotlarni qo'shamiz:\n",
+        "- `country` = `Uzbekistan`\n",
+        "- `population` = `33935.7630`\n",
+        "- `area` = `447400`"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 17,
+      "id": "5eae9139-107f-4bfc-99ad-ec3295cc1f95",
+      "metadata": {
+        "id": "5eae9139-107f-4bfc-99ad-ec3295cc1f95"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"\"\"\n",
+        "INSERT INTO worldpop (country,population,area)\n",
+        "VALUES ('Uzbekistan', 33935.7630, 447400)\n",
+        "\"\"\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "a49860c4-73a8-47a4-8346-128e00908360",
+      "metadata": {
+        "id": "a49860c4-73a8-47a4-8346-128e00908360"
+      },
+      "source": [
+        "Tekshirib ko'ramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 18,
+      "id": "4efe97df-8ab4-4bdd-a670-54d681b5ceaa",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4efe97df-8ab4-4bdd-a670-54d681b5ceaa",
+        "outputId": "d910ca65-07ff-4452-ae30-f7fc26ee20e0"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(1, 'Macau', 21946.4667, 658.394, 30),\n",
+              " (None, 'Uzbekistan', None, 33935.763, 447400)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 18
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "cursor.execute(query)\n",
+        "cursor.fetchall()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "694d85ed-a634-478d-ae71-5e4de57c9858",
+      "metadata": {
+        "id": "694d85ed-a634-478d-ae71-5e4de57c9858"
+      },
+      "source": [
+        "Ko'rib turganingizdek mavjud bo'lmagan qiymatlar o'rniga `None` qo'yb ketildi."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "542a259c-4b60-4296-aaa3-ca97cdde7d31",
+      "metadata": {
+        "id": "542a259c-4b60-4296-aaa3-ca97cdde7d31"
+      },
+      "source": [
+        "## Ma'lumotlarni yangilash/qo'shish\n",
+        "`Uzbekistan` qatoriga `rank` va `density` qiymatlarini qo'shamiz."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 19,
+      "id": "445f428f-b03d-4535-be89-74e93ee2cec2",
+      "metadata": {
+        "id": "445f428f-b03d-4535-be89-74e93ee2cec2"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"\"\"\n",
+        "UPDATE worldpop\n",
+        "SET rank=133, density=75.8511\n",
+        "WHERE country=\"Uzbekistan\"\n",
+        "\"\"\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "aa5f513e-d0f8-4023-8708-453d08b0b2bb",
+      "metadata": {
+        "id": "aa5f513e-d0f8-4023-8708-453d08b0b2bb"
+      },
+      "source": [
+        "Tekshirib ko'ramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 20,
+      "id": "ee1219f7-234f-4a7e-a753-27791a7fe6b2",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ee1219f7-234f-4a7e-a753-27791a7fe6b2",
+        "outputId": "d525b177-42ee-49f7-8386-14a33ae16e8d"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(1, 'Macau', 21946.4667, 658.394, 30),\n",
+              " (133, 'Uzbekistan', 75.8511, 33935.763, 447400)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 20
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "cursor.execute(query)\n",
+        "cursor.fetchall()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "d3da8a94-59e4-4af1-b216-9af8dae393f5",
+      "metadata": {
+        "id": "d3da8a94-59e4-4af1-b216-9af8dae393f5"
+      },
+      "source": [
+        "## Jadvaldan ma'lumot o'chirish"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 21,
+      "id": "3d5bf28b-fd6d-439d-8413-fddfea2d4471",
+      "metadata": {
+        "id": "3d5bf28b-fd6d-439d-8413-fddfea2d4471"
+      },
+      "outputs": [],
+      "source": [
+        "query = 'DELETE FROM worldpop WHERE country=\"Macau\"'\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "3dfa55e4-8fa8-419a-acc0-9377e98f0a79",
+      "metadata": {
+        "id": "3dfa55e4-8fa8-419a-acc0-9377e98f0a79"
+      },
+      "source": [
+        "Tekshirib ko'ramiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 22,
+      "id": "f1978c16-bd77-448c-b9af-f7b2d0119bbe",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f1978c16-bd77-448c-b9af-f7b2d0119bbe",
+        "outputId": "59404348-cf94-4a07-88d5-202d07b3d7c2"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(133, 'Uzbekistan', 75.8511, 33935.763, 447400)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 22
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "cursor.execute(query)\n",
+        "cursor.fetchall()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "3a001e27-ea00-4665-8f5d-fcbf91dbf163",
+      "metadata": {
+        "id": "3a001e27-ea00-4665-8f5d-fcbf91dbf163"
+      },
+      "source": [
+        "## Jadvalni butunlay o'chirib tashlash"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 23,
+      "id": "17552add-4b79-4367-a09e-4a1db677b937",
+      "metadata": {
+        "id": "17552add-4b79-4367-a09e-4a1db677b937"
+      },
+      "outputs": [],
+      "source": [
+        "cursor.execute('DROP TABLE worldpop')\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 24,
+      "id": "8a3143f1-8d7d-4e56-ad0d-e8b05ab50eba",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "8a3143f1-8d7d-4e56-ad0d-e8b05ab50eba",
+        "outputId": "8240a178-0f4e-47b8-c25d-366ef69e5916"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[('jadval',)]\n"
+          ]
+        }
+      ],
+      "source": [
+        "cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table';\")\n",
+        "print(cursor.fetchall())"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "e458e5a1-dbcf-459d-90bc-fc124faa0c83",
+      "metadata": {
+        "id": "e458e5a1-dbcf-459d-90bc-fc124faa0c83"
+      },
+      "source": [
+        "# SQL buyruqlarni f-string yordamida yozish\n",
+        "Biz yuqorida SQL buyruqlarni oddiy matn ko'rinishida yozayapamiz, demak Pythondagi f-string yordamida matnlarga o'zgaruvchilarning qiymatini ham qo'shish mumkin.\n",
+        "\n",
+        "Keling boshlanishiga quyidagi DF ni yaratib olamiz, so'ngra DF qatorlarini yangi SQL jadvalga f-string yordamida yozamiz."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 25,
+      "id": "96355a4e-b98d-4ace-ba29-71403bbb2f8d",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 238
+        },
+        "id": "96355a4e-b98d-4ace-ba29-71403bbb2f8d",
+        "outputId": "e3139eb2-76fe-4313-a4d1-0e8a5374e659"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "        country     density   densityMi   pop2021  area\n",
+              "rank                                                   \n",
+              "1         Macau  21946.4667  56841.3487   658.394    30\n",
+              "2        Monaco  19755.5000  51166.7450    39.511     2\n",
+              "3     Singapore   8305.1915  21510.4461  5896.686   710\n",
+              "4     Hong Kong   6841.3134  17719.0017  7552.810  1104\n",
+              "5     Gibraltar   5616.3333  14546.3033    33.698     6"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-fef5f099-5373-46d3-ae8b-65496c40c2ad\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>country</th>\n",
+              "      <th>density</th>\n",
+              "      <th>densityMi</th>\n",
+              "      <th>pop2021</th>\n",
+              "      <th>area</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>rank</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Macau</td>\n",
+              "      <td>21946.4667</td>\n",
+              "      <td>56841.3487</td>\n",
+              "      <td>658.394</td>\n",
+              "      <td>30</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Monaco</td>\n",
+              "      <td>19755.5000</td>\n",
+              "      <td>51166.7450</td>\n",
+              "      <td>39.511</td>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Singapore</td>\n",
+              "      <td>8305.1915</td>\n",
+              "      <td>21510.4461</td>\n",
+              "      <td>5896.686</td>\n",
+              "      <td>710</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>Hong Kong</td>\n",
+              "      <td>6841.3134</td>\n",
+              "      <td>17719.0017</td>\n",
+              "      <td>7552.810</td>\n",
+              "      <td>1104</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>5</th>\n",
+              "      <td>Gibraltar</td>\n",
+              "      <td>5616.3333</td>\n",
+              "      <td>14546.3033</td>\n",
+              "      <td>33.698</td>\n",
+              "      <td>6</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-fef5f099-5373-46d3-ae8b-65496c40c2ad')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-fef5f099-5373-46d3-ae8b-65496c40c2ad button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-fef5f099-5373-46d3-ae8b-65496c40c2ad');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ],
+      "source": [
+        "df = pd.read_csv(\"https://github.com/anvarnarz/praktikum_datasets/raw/main/world_population.csv\", index_col='rank')\n",
+        "df.head()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "6741cffb-930e-4a93-ab23-96aa0e29d9c9",
+      "metadata": {
+        "id": "6741cffb-930e-4a93-ab23-96aa0e29d9c9"
+      },
+      "source": [
+        "Yangi SQL jadval yaratamiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 26,
+      "id": "58003740-cc93-4bf6-bb42-7118194e397c",
+      "metadata": {
+        "id": "58003740-cc93-4bf6-bb42-7118194e397c"
+      },
+      "outputs": [],
+      "source": [
+        "query = \"\"\"\n",
+        "CREATE TABLE IF NOT EXISTS worldpop(\n",
+        "rank INT,\n",
+        "country TEXT PRIMARY KEY,\n",
+        "density DOUBLE,\n",
+        "population DOUBLE NOT NULL,\n",
+        "area INT NOT NULL\n",
+        ");\n",
+        "\"\"\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "597cd1bf-004a-4d61-a43e-f00ccf038d50",
+      "metadata": {
+        "id": "597cd1bf-004a-4d61-a43e-f00ccf038d50"
+      },
+      "source": [
+        "Keling jadvladan O'zbekiston uchun qiymatlarni ajratib olamiz"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 27,
+      "id": "147463cc-05f4-4f10-8741-9e2f2a430035",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "147463cc-05f4-4f10-8741-9e2f2a430035",
+        "outputId": "8b6fc662-dd37-478a-8696-6eba9d5740ad"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "         country  density  densityMi    pop2021    area\n",
+            "rank                                                   \n",
+            "133   Uzbekistan  75.8511   196.4542  33935.763  447400\n"
+          ]
+        }
+      ],
+      "source": [
+        "uz=df[df.country==\"Uzbekistan\"]\n",
+        "print(uz)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 30,
+      "id": "a22eb13b-d5b4-490f-8b22-aca740fcd156",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a22eb13b-d5b4-490f-8b22-aca740fcd156",
+        "outputId": "0b251a37-39b2-4feb-e999-ac704529ea5d"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "133, Uzbekistan, 75.8511, 33935.763, 447400\n"
+          ]
+        }
+      ],
+      "source": [
+        "rank = uz.index.values[0]\n",
+        "country = uz.at[rank, 'country']\n",
+        "density = uz.at[rank, 'density']\n",
+        "population = uz.at[rank, 'pop2021']\n",
+        "area = uz.at[rank, 'area']\n",
+        "print(f\"{rank}, {country}, {density}, {population}, {area}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 31,
+      "id": "061d12fb-d5ee-4c65-8122-15a60c2a379e",
+      "metadata": {
+        "id": "061d12fb-d5ee-4c65-8122-15a60c2a379e"
+      },
+      "outputs": [],
+      "source": [
+        "query = f\"\"\"\n",
+        "INSERT INTO worldpop VALUES ({rank}, '{country}', {density}, {population}, {area}) \n",
+        "\"\"\"\n",
+        "cursor.execute(query)\n",
+        "db.commit()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 32,
+      "id": "91c1f0a4-4270-43d5-b34f-11eb4757ea3b",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "91c1f0a4-4270-43d5-b34f-11eb4757ea3b",
+        "outputId": "3a4f065d-d41e-4182-bf4d-b52e524c2f13"
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[(133, 'Uzbekistan', 75.8511, 33935.763, 447400)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 32
+        }
+      ],
+      "source": [
+        "query = \"SELECT * FROM worldpop\"\n",
+        "cursor.execute(query)\n",
+        "cursor.fetchall() "
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "id": "5429d836-84c3-427e-9992-ed16ffbe47b0",
+      "metadata": {
+        "id": "5429d836-84c3-427e-9992-ed16ffbe47b0"
+      },
+      "source": [
+        "## Omborni yopamiz.\n",
+        "Ishni tugatib omborni yopishni unutmang."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 33,
+      "id": "358b9fbd-77e1-4abd-934d-108d9a247d0f",
+      "metadata": {
+        "id": "358b9fbd-77e1-4abd-934d-108d9a247d0f"
+      },
+      "outputs": [],
+      "source": [
+        "db.close()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "cK9IUI7Uvvxc"
+      },
+      "id": "cK9IUI7Uvvxc",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.8.8"
+    },
+    "colab": {
+      "name": "DATA-WRANGLE-SQLite-2.ipynb",
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
